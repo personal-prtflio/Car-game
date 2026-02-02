@@ -1,55 +1,61 @@
 import * as THREE from './libs/three.module.js';
 import { GLTFLoader } from './libs/GLTFLoader.js';
+import SimplexNoise from './libs/SimplexNoise.js';
 import { generateTerrain } from './terrain.js';
 import { CheckpointSystem } from './checkpoints.js';
 
-// --- Scene & Renderer ---
+// Scene
 const canvas = document.getElementById('gameCanvas');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
 
-const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 2000);
+// Camera
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
 camera.position.set(0, 5, -10);
 
+// Renderer
 const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// --- Lighting ---
-const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-hemi.position.set(0,50,0);
-scene.add(hemi);
-const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-dir.position.set(-3,10,-10);
-scene.add(dir);
+// Lights
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+hemiLight.position.set(0,50,0);
+scene.add(hemiLight);
 
-// --- Terrain ---
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+dirLight.position.set(-3,10,-10);
+scene.add(dirLight);
+
+// Terrain
 generateTerrain(scene);
 
-// --- Checkpoints ---
+// Checkpoints
 const checkpoints = new CheckpointSystem(scene);
 checkpoints.addCheckpoint(new THREE.Vector3(50,0,50));
 checkpoints.addCheckpoint(new THREE.Vector3(-100,0,200));
 checkpoints.addCheckpoint(new THREE.Vector3(200,0,-150));
 
-// --- Car ---
+// Car
 let car;
 const loader = new GLTFLoader();
-loader.load('./assets/car.glb', gltf => { // <--- path updated
+loader.load('./assets/car.glb', gltf => {
   car = gltf.scene;
   car.scale.set(1.5,1.5,1.5);
-  car.position.set(0,10,0); // start above terrain
+  car.position.set(0,10,0);
   scene.add(car);
 });
 
-// --- Controls ---
+// Controls
 const keys = {};
-const speed = { forward: 0, turn: 0 };
+const speed = { forward:0, turn:0 };
+
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
 function updateCar(dt) {
   if (!car) return;
+
   // Movement
   if (keys['w']) speed.forward = 0.08;
   else if (keys['s']) speed.forward = -0.05;
@@ -72,7 +78,7 @@ function updateCar(dt) {
   checkpoints.checkCar(car);
 }
 
-// --- Animate ---
+// Animate
 const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
