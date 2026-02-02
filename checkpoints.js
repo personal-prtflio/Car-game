@@ -18,11 +18,10 @@ export class CheckpointSystem {
 
   checkCar(car) {
     if (this.checkpoints.length === 0) return;
-
     const cp = this.checkpoints[this.current];
     const distance = car.position.distanceTo(cp.position);
-    if (distance < 7) { // car reached checkpoint
-      cp.material.color.set(0x00ff00); // mark as completed
+    if (distance < 7) {
+      cp.material.color.set(0x00ff00);
       this.current++;
       console.log(`Checkpoint ${this.current} reached!`);
     }
