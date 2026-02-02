@@ -1,4 +1,4 @@
-import * as THREE from './libs/three.module.js';
+import * as THREE from '/libs/three.module.js';
 
 export class CheckpointSystem {
   constructor(scene) {
