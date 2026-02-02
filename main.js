@@ -1,8 +1,9 @@
-import * as THREE from '/libs/three.module.js';
-import { GLTFLoader } from '/libs/GLTFLoader.js';
-import SimplexNoise from '/libs/SimplexNoise.js';
-import { generateTerrain } from '/terrain.js';
-import { CheckpointSystem } from '/checkpoints.js';
+import * as THREE from './threejs/build/three.module.js';
+import { GLTFLoader } from './threejs/examples/jsm/loaders/GLTFLoader.js';
+import SimplexNoise from './libs/SimplexNoise.js';
+import { generateTerrain } from './terrain.js';
+import { CheckpointSystem } from './checkpoints.js';
+
 
 // Scene
 const canvas = document.getElementById('gameCanvas');
