@@ -1,15 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>3D Car Adventure</title>
-  <style>
-    html, body { margin:0; overflow:hidden; }
-    canvas { display:block; width:100vw; height:100vh; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Open World Adventure</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
-<script type="module" src="./main.js"></script>
+    <div id="ui">
+        <div class="controls">
+            <h1>OPEN WORLD DRIVE</h1>
+            <p><strong>WASD</strong> Move | <strong>SPACE</strong> Brake | <strong>R</strong> Reset Car</p>
+        </div>
+        <div id="loading">Loading 3D Assets...</div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module" src="main.js"></script>
 </body>
 </html>
