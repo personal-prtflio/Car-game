@@ -11,6 +11,7 @@ export class Car {
         this.acceleration = 0.015;
         this.friction = 0.97;
         this.maxSpeed = 0.6;
+        this.boostMultiplier = 1.8;
         this.turnSpeed = 0.04;
 
         this.init();
@@ -20,17 +21,20 @@ export class Car {
         const loader = new GLTFLoader();
         loader.load('car.glb', (gltf) => {
             const model = gltf.scene;
+            // You may need to adjust scale/rotation depending on your model
+            model.scale.set(1.5, 1.5, 1.5); 
             model.traverse(n => { if(n.isMesh) n.castShadow = true; });
             this.mesh.add(model);
             document.getElementById('loading').style.display = 'none';
         }, undefined, (err) => {
-            // Fallback if car.glb is missing
+            console.warn("car.glb not found, using fallback box.");
             const box = new THREE.Mesh(
-                new THREE.BoxGeometry(1.2, 0.6, 2.5),
+                new THREE.BoxGeometry(1.5, 0.7, 3),
                 new THREE.MeshStandardMaterial({ color: 0x00ffcc })
             );
+            box.position.y = 0.35;
             this.mesh.add(box);
-            document.getElementById('loading').innerHTML = "Model not found - using placeholder";
+            document.getElementById('loading').style.display = 'none';
         });
         this.scene.add(this.mesh);
     }
@@ -38,26 +42,34 @@ export class Car {
     reset() {
         this.velocity = 0;
         this.mesh.position.set(0, 0, 0);
-        this.mesh.rotation.set(0, 0, 0); // Flips car upright
+        this.mesh.rotation.set(0, 0, 0);
     }
 
     update(keys) {
+        // Reset logic
         if (keys['r']) this.reset();
 
+        // Speed calculation
+        const currentMaxSpeed = keys['shift'] ? this.maxSpeed * this.boostMultiplier : this.maxSpeed;
+        
         if (keys['w'] || keys['arrowup']) this.velocity += this.acceleration;
         if (keys['s'] || keys['arrowdown']) this.velocity -= this.acceleration;
         
+        // Apply Physics
         this.velocity *= this.friction;
-        if (keys[' ']) this.velocity *= 0.8;
+        if (keys[' ']) this.velocity *= 0.8; // Brake
 
-        this.velocity = Math.max(Math.min(this.velocity, this.maxSpeed), -this.maxSpeed/2);
+        // Clamp Speed
+        this.velocity = Math.max(Math.min(this.velocity, currentMaxSpeed), -this.maxSpeed/2);
 
+        // Steering
         if (Math.abs(this.velocity) > 0.01) {
             const direction = this.velocity > 0 ? 1 : -1;
             if (keys['a'] || keys['arrowleft']) this.mesh.rotation.y += this.turnSpeed * direction;
             if (keys['d'] || keys['arrowright']) this.mesh.rotation.y -= this.turnSpeed * direction;
         }
 
+        // Apply position
         this.mesh.position.x += Math.sin(this.mesh.rotation.y) * this.velocity;
         this.mesh.position.z += Math.cos(this.mesh.rotation.y) * this.velocity;
     }
