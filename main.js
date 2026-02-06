@@ -1,90 +1,66 @@
-import * as THREE from './threejs/build/three.module.js';
-import { GLTFLoader } from './threejs/examples/jsm/loaders/GLTFLoader.js';
-import SimplexNoise from './libs/SimplexNoise.js';
-import { generateTerrain } from './terrain.js';
-import { CheckpointSystem } from './checkpoints.js';
+import * as THREE from 'three';
+import { Car } from './car.js';
 
-
-// Scene
-const canvas = document.getElementById('gameCanvas');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
+scene.background = new THREE.Color(0x87CEEB); // Sky Blue
+scene.fog = new THREE.Fog(0x87CEEB, 10, 100);
 
-// Camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
-camera.position.set(0, 5, -10);
-
-// Renderer
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Lights
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
-hemiLight.position.set(0,50,0);
-scene.add(hemiLight);
+const light = new THREE.DirectionalLight(0xffffff, 1.5);
+light.position.set(20, 50, 20);
+light.castShadow = true;
+scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-dirLight.position.set(-3,10,-10);
-scene.add(dirLight);
+// Floor
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(1000, 1000),
+    new THREE.MeshStandardMaterial({ color: 0x44aa44 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
 
-// Terrain
-generateTerrain(scene);
+// Obstacles
+for(let i=0; i<50; i++) {
+    const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 2, 2),
+        new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff })
+    );
+    mesh.position.set((Math.random()-0.5)*150, 1, (Math.random()-0.5)*150);
+    mesh.castShadow = true;
+    scene.add(mesh);
+}
 
-// Checkpoints
-const checkpoints = new CheckpointSystem(scene);
-checkpoints.addCheckpoint(new THREE.Vector3(50,0,50));
-checkpoints.addCheckpoint(new THREE.Vector3(-100,0,200));
-checkpoints.addCheckpoint(new THREE.Vector3(200,0,-150));
+const player = new Car(scene);
+const keys = {};
 
-// Car
-let car;
-const loader = new GLTFLoader();
-loader.load('./assets/car.glb', gltf => {
-  car = gltf.scene;
-  car.scale.set(1.5,1.5,1.5);
-  car.position.set(0,10,0);
-  scene.add(car);
+window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+
+function animate() {
+    requestAnimationFrame(animate);
+    player.update(keys);
+
+    const offset = new THREE.Vector3(0, 4, -8);
+    offset.applyQuaternion(player.mesh.quaternion);
+    const targetPos = player.mesh.position.clone().add(offset);
+    
+    camera.position.lerp(targetPos, 0.1);
+    camera.lookAt(player.mesh.position);
+
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Controls
-const keys = {};
-const speed = { forward:0, turn:0 };
-
-window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
-window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-
-function updateCar(dt) {
-  if (!car) return;
-
-  // Movement
-  if (keys['w']) speed.forward = 0.08;
-  else if (keys['s']) speed.forward = -0.05;
-  else speed.forward *= 0.9;
-
-  if (keys['a']) speed.turn = 0.04;
-  else if (keys['d']) speed.turn = -0.04;
-  else speed.turn *= 0.8;
-
-  car.rotation.y += speed.turn;
-  const forwardVec = new THREE.Vector3(0,0,1).applyQuaternion(car.quaternion).multiplyScalar(-speed.forward);
-  car.position.add(forwardVec);
-
-  // Camera follow
-  const camOffset = new THREE.Vector3(0,5,-10).applyQuaternion(car.quaternion);
-  camera.position.copy(car.position.clone().add(camOffset));
-  camera.lookAt(car.position);
-
-  // Checkpoints
-  checkpoints.checkCar(car);
-}
-
-// Animate
-const clock = new THREE.Clock();
-function animate() {
-  requestAnimationFrame(animate);
-  const dt = clock.getDelta();
-  updateCar(dt);
-  renderer.render(scene, camera);
-}
 animate();
