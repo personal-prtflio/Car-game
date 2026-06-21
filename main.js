@@ -66,7 +66,7 @@ spawn('rock.glb', 25, [0.3, 0.6]);
 // --- 3D TEXT ---
 const fontLoader = new FontLoader();
 fontLoader.load('https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-    const textGeo = new TextGeometry('Please don't ever feel like this is me trying to pull you back. I understand the depth of the pain I caused you, and because I finally understand it, I will never, ever force myself into your life or try to make you mine again. Your peace matters more to me than my own longings. I don't expect anything in return for these words. What I want to show you now isn't desperation; it is just absolute, enduring gratefulness.', { font: font, size: 1, height: 0.5 });
+    const textGeo = new TextGeometry('Please dont ever feel like this is me trying to pull you back. I understand the depth of the pain I caused you, and because I finally understand it, I will never, ever force myself into your life or try to make you mine again. Your peace matters more to me than my own longings. I dont expect anything in return for these words. What I want to show you now isnt desperation; it is just absolute, enduring gratefulness.', { font: font, size: 1, height: 0.5 });
     const textMesh = new THREE.Mesh(textGeo, new THREE.MeshStandardMaterial({ color: 0xffffff }));
     textMesh.position.set(-30, 8, -40);
     textMesh.castShadow = true;
